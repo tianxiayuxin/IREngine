@@ -141,7 +141,11 @@ bool IRBox::initialize(ConfigFlag flags)
 	}
 
 	//create a surface
-	_surface = eglCreateWindowSurface(_display, config, _window, NULL);
+	EGLint winAttribList[] =  {
+				EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+				EGL_NONE
+		};
+	_surface = eglCreateWindowSurface(_display, config, (EGLNativeWindowType) _window, winAttribList);
 	if(_surface == EGL_NO_SURFACE)
 	{
 		return false;
