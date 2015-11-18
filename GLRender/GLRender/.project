@@ -30,6 +30,10 @@
 					<value>${NDK_HOME}/ndk-build.cmd</value>
 				</dictionary>
 				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildLocation</key>
+					<value>${workspace_loc:/GLRender}</value>
+				</dictionary>
+				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>
 					<value>clean</value>
 				</dictionary>

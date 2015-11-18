@@ -1,5 +1,5 @@
 #include "IRBox.h"
-#include <GLES3/gl3.h>
+
 
 
 IRBox::IRBox()

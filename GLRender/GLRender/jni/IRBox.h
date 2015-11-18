@@ -23,6 +23,7 @@
 #include "Assimp/include/assimp/Importer.hpp"
 #include "Assimp/include/assimp/postprocess.h"
 
+#include "IrPlatform.h"
 
 
 class IRBox{
