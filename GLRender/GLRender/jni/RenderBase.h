@@ -7,6 +7,8 @@
 #define _RENDERBASE_H
 #include "IrPlatform.h"
 #include "Logger.h"
+#include <vector>
+
 
 
 namespace IRBox{

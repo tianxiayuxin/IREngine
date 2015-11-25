@@ -2,6 +2,7 @@ package com.example.glrender;
 
 
 import android.app.Activity;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
@@ -17,6 +18,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback{
 	        System.loadLibrary("GLRender");
 	    }
 	
+	public static native void nativeSetApkPath(String apkPath);
     public static native void nativeOnStart();
     public static native void nativeOnResume();
     public static native void nativeOnPause();
@@ -28,6 +30,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        final ApplicationInfo applicationInfo = this.getApplicationInfo();
+        nativeSetApkPath(applicationInfo.sourceDir);
         SurfaceView renderView = (SurfaceView) findViewById(R.id.render_view);
         renderView.getHolder().addCallback(this);
     }

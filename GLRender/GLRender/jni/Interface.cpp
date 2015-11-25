@@ -1,42 +1,49 @@
 #include <jni.h>
 
 #include"Logger.h"
-#include"IRBox.h"
+#include"IRApplication.h"
 #include "Interface.h"
 #include <android/native_window_jni.h>
 
-#define LOG_TAG "EglSample"
+
 
 
 static ANativeWindow *window = 0 ;
-static IRBox *irbox = 0;
+static IRApplication *irApp = 0;
+
+JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeSetApkPath(JNIEnv* jenv, jclass jclazz, jstring jpath)
+{
+	LOG_INFO("Interface", "nativeOnStart");
+	irApp = new IRApplication();
+    return;
+}
 
 JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeOnStart(JNIEnv* jenv, jclass jclazz)
 {
-	LOG_INFO("nativeOnStart");
-	irbox = new IRBox();
+	LOG_INFO("Interface", "nativeOnStart");
+	irApp = new IRApplication();
     return;
 }
 
 JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeOnResume(JNIEnv* jenv, jclass jclazz)
 {
-	LOG_INFO("nativeOnResume");
-	irbox->start();
+	LOG_INFO("Interface", "nativeOnResume");
+	irApp->start();
     return;
 }
 
 JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeOnPause(JNIEnv* jenv, jclass jclazz)
 {
-    LOG_INFO("nativeOnPause");
-    irbox->stop();
+    LOG_INFO("Interface", "nativeOnPause");
+    irApp->stop();
     return;
 }
 
 JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeOnStop(JNIEnv* jenv, jclass jclazz)
 {
-    LOG_INFO("nativeOnStop");
-    delete irbox;
-    irbox = 0;
+    LOG_INFO("Interface","nativeOnStop");
+    delete irApp;
+    irApp = 0;
     return;
 }
 
@@ -45,7 +52,7 @@ JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeSetSurface(J
 	if(surface != 0)
 	{
 		window = ANativeWindow_fromSurface(jenv, surface);
-		irbox->setWindow(window);
+		irApp->setWindow(window);
 	}else{
 		ANativeWindow_release(window);
 	}

@@ -9,6 +9,14 @@ extern "C" {
 #endif
 /*
  * Class:     com_example_glrender_MainActivity
+ * Method:    nativeSetApkPath
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_example_glrender_MainActivity_nativeSetApkPath
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_example_glrender_MainActivity
  * Method:    nativeOnStart
  * Signature: ()V
  */

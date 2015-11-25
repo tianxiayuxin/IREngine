@@ -8,7 +8,7 @@
 
 #include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>
-#include <vector>
+
 
 #include <stdio.h>
 
@@ -18,7 +18,10 @@ typedef unsigned int   uint32;
 typedef long long      int64;
 typedef unsigned long long uint64;
 
-
+namespace IRBox{
+typedef int ResHandle;
+typedef int NodeHandle;
+}
 
 
 

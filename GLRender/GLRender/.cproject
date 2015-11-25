@@ -37,6 +37,8 @@
 									<listOptionValue builtIn="false" value="&quot;E:\android\android-ndk-r10c\sources\cxx-stl\stlport\stlport&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;H:\AR\IREngine\GLRender\GLRender\jni&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;H:\AR\IREngine\GLRender\GLRender\jni\Assimp\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;E:\android\android-ndk-r10c\sources\cxx-stl\gnu-libstdc++\4.8\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;E:\android\android-ndk-r10c\sources\cxx-stl\gnu-libstdc++\4.8\include\debug&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.571166438" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin"/>
 							</tool>
@@ -47,6 +49,8 @@
 									<listOptionValue builtIn="false" value="&quot;E:\android\android-ndk-r10c\sources\cxx-stl\stlport\stlport&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;H:\AR\IREngine\GLRender\GLRender\jni&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;H:\AR\IREngine\GLRender\GLRender\jni\Assimp\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;E:\android\android-ndk-r10c\sources\cxx-stl\gnu-libstdc++\4.8\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;E:\android\android-ndk-r10c\sources\cxx-stl\gnu-libstdc++\4.8\include\debug&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.610327488" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 							</tool>

@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := GLRender
 
-LOCAL_SRC_FILES := Interface.cpp IRBox.cpp                                
+LOCAL_SRC_FILES := Interface.cpp IRApplication.cpp                                
 LOCAL_C_INCLUDES:=$(LOCAL_PATH) 
 
 LOCAL_LDLIBS    := -llog -landroid  -lEGL -lGLESv3
