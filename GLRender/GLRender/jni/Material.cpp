@@ -83,6 +83,17 @@ bool MaterialResource::load(const char *data, int size)
 
 	//Shader Flags
 	XMLNode nodel = rootNode.getFirstChild("ShaderFlag");
+	while(!nodel.isEmpty())
+	{
+		if(nodel.getAttribute("name")==0x0) return raiseError("Missing ShaderFlag attribute 'name'");
+
+		_shaderFlags.push_back(nodel.getAttribute("name"));
+
+		nodel= nodel.getNextSibling("ShaderFlag");
+	}
+
+	//Shader
+
 
 
 }
