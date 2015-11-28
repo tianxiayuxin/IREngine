@@ -30,7 +30,7 @@ public:
 	static bool init();
 	static void release();
 
-	static void log(int logType, const std::string &name);
+	static void log(int logType, const char *moduleName, ...);
 
 	static ResourceManager  &resMan(){return *_resourceManager;}
 	static Render &render(){return *_render;}

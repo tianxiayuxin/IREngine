@@ -33,6 +33,13 @@ public:
 	void release();
 	bool load(const char *data, int size);
 
+	bool hasDependency(CodeResource *codeRes);
+	bool tryLinking(uint32 *flagMask);
+
+private:
+	bool raiseError(const std::string &msg);
+	void updateShaders();
+
 private:
 	uint32                 _flagMask;
 	std::string            _code;
@@ -159,6 +166,9 @@ public:
 	void preLoadCombination(uint32 combMask);
 	void compileContexts();
 	ShaderCombination *getCombination(ShaderContext &context, uint32 combMask);
+
+	std::vector<ShaderContext> &getContexts(){return _contexts;}
+	CodeResource *getCode(uint32 index){return &_codeSections[index];}
 
 private:
 	bool raiseError(const std::string &msg, int line = -1);

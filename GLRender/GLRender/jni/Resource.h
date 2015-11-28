@@ -154,6 +154,7 @@ public:
 	Resource *resolveResHandle(ResHandle handle)
 	{ return (handle!=0 && (unsigned)(handle-1)<_resources.size())?_resources.size()-1:0x0;}
 
+	std::vector<Resource*> &getResource(){return _resources;}
 protected:
 	ResHandle addResource(Resource &res);
 

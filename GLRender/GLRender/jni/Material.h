@@ -68,8 +68,12 @@ public:
 	//TODO:  some methods should be specified
 
 private:
+	bool raiseError(const std::string &msg, int line = -1);
+
+private:
 	PShaderResource           _shaderRes;
 	uint32                    _combMask;
+	std::string               _class;
 	std::vector<MatUniform>   _uniforms;
 	std::vector<std::string>  _shaderFlags;
 

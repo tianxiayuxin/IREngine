@@ -53,13 +53,164 @@ bool CodeResource::raiseError(const std::string &msg)
 	release();
 	initDefault();
 
+	Modules::log(LogTypes::ERROR, "CodeResource", "'%s':%s", _name.c_str(), msg.c_str());
+	return false;
+}
 
+bool CodeResource::load(const char *data, int size)
+{
+	if(!Resource::load(data, size)) return false;
+
+	char *code = new char[size+1];
+	char *pCode = code;
+	const char *pData = data;
+	const char *eof = data+size;
+
+	bool lineComment = false, blockComment = false;
+
+	//Parse code
+	while(pData < eof)
+	{
+		// Check for begin of comment
+		if(pData < eof -1 && !lineComment && !blockComment)
+		{
+			if(*pData == '/' &&*(pData+1)=='/')
+				lineComment = true;
+			else if(*pData == '/'&&*(pData+1)=='*')
+				blockComment = true;
+		}
+
+		//Check for end of comment
+		if(lineComment && (*pData == '\n'||*pData == '\r'))
+			lineComment = false;
+		else if(blockComment&& pData< eof-1 &&*pData == '*'&& *(pData+1)=='/')
+			blockComment = false;
+
+		//Check for includes
+		if(!lineComment && !blockComment && pData < eof -7)
+		{
+			if( *pData == '#' && *(pData+1) == 'i' && *(pData+2) == 'n' && *(pData+3) == 'c' &&
+			  *(pData+4) == 'l' && *(pData+5) == 'u' && *(pData+6) == 'd' && *(pData+7) == 'e' )
+			{
+				pData +=6;
+
+				//Parse resource name
+				const char *nameBegin = 0x0, *nameEnd = 0x0;
+
+				while(++pData < eof)
+				{
+					if(*pData == '"')
+					{
+						if(nameBegin == 0x0)
+							nameBegin = pData +1;
+						else
+							nameEnd = pData;
+					}
+					else if(*pData == '\n' || *pData == '\r')break;
+				}
+
+				if(nameBegin != 0x0 && nameEnd != 0x0)
+				{
+					std::string resName(nameBegin, nameEnd);
+
+					ResHandle res = Modules::resMan().addResource(
+							ResourceTypes::Code, resName, 0, false);
+					CodeResource *codeRes = (CodeResource *)Modules::resMan().resolveResHandle(res);
+					_includes.push_back(std::pair<PCodeResource, size_t>(codeRes, pCode-code));
+				}else
+				{
+					delete[] code;
+					return raiseError("Invalid #include syntax");
+				}
+			}
+		}
+
+		//Check for flags
+		if(!lineComment && !blockComment && pData < eof-4)
+		{
+			if( *pData == '_' && *(pData+1) == 'F' && *(pData+4) == '_' &&
+			   *(pData+2) >= 48 && *(pData+2) <= 57 && *(pData+3) >= 48 && *(pData+3) <= 57 )
+			{
+				//Set flag
+				uint32 num = (*(pData+2)-48)*10 + (*(pData+3)-48);
+				_flagMask |= 1 <<(num-1);
+
+				for(uint32 i = 0; i <5; ++i)*pCode++ = *pData++;
+
+				//Ignore rest of name
+				while(pData < eof && *pData != ' '&&*pData!='\t'&& *pData!='\n'&&*pData != '\r')
+				{
+					++pData;
+				}
+			}
+		}
+
+		*pCode++ = *pData++;
+	}
+	*pCode = '\0';
+	_code = code;
+	delete[] code;
+
+	//Compile shaders that require this code block
+	updateShaders();
+
+	return true;
+}
+
+bool CodeResource::hasDependency(CodeResource *codeRes)
+{
+	//Note: There is no check for  cycles
+
+	if(codeRes ==  this) return true;
+
+	for(uint32 i = 0; i < _includes.size(); ++i)
+	{
+		if(_includes[i].first->hasDependency(codeRes)) return true;
+	}
+
+	return false;
 }
 
 
+bool CodeResource::tryLinking(uint32 *flagMask)
+{
+	if(!_loaded)return false;
+	if(flagMask!=0x0)*flagMask |= _flagMask;
 
+	for(uint32 i=0; i<_includes.size();++i)
+	{
+		if(!_includes[i].first->tryLinking(flagMask))return false;
+	}
+	return true;
+}
 
+void CodeResource::updateShaders()
+{
+	for(uint32 i = 0; i < Modules::resMan().getResource().size(); ++i)
+	{
+		Resource *res = Modules::resMan().getResource()[i];
 
+		if(res != 0x0 && res->getType()==ResourceTypes::Shader)
+		{
+			ShaderResource *shaderRes = (ShaderResource *)res;
+
+			//Mark shaders using this code as uncompiled
+			for(uint32 j = 0; j<shaderRes->getContexts().size();  ++j)
+			{
+				ShaderContext &context = shaderRes->getContexts()[j];
+
+				if(shaderRes->getCode(context.vertCodeIdx)->hasDependency(this)||
+						shaderRes->getCode(context.fragCodeIdx)->hasDependency(this))
+				{
+					context.compiled = false;
+				}
+			}
+
+			//Recompile shaders
+			shaderRes->compileContexts();
+		}
+	}
+}
 
 
 //============================================================
@@ -479,6 +630,34 @@ bool ShaderResource::load(const char *data, int size)
 
 	return true;
 }
+
+void ShaderResource::compileContexts()
+{
+	for(uint32 i = 0; i <_contexts.size(); ++i)
+	{
+		ShaderContext &context = _contexts[i];
+		if(!context.compiled)
+		{
+			context.flagMask = 0;
+			if(!getCode(context.vertCodeIdx)->tryLinking(&context.flagMask)||
+					!getCode(context.fragCodeIdx)->tryLinking(&context.flagMask))
+			{
+				continue;
+			}
+
+
+			//Add preloaded combinations
+//			for(std::set<uint32>::iterator itr = _preLoadList.begin(); itr!=_preLoadList.end(); ++itr)
+//			{
+//				uint32 combMask = *itr&context.flagMask;
+//			}
+
+		}
+
+
+	}
+}
+
 
 
 }
