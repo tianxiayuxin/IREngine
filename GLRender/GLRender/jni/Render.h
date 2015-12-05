@@ -46,6 +46,9 @@ public :
 	bool init();
 	void initStates();
 
+
+	bool createShaderComb(const char *vertexShader, const char *fragmentShader, ShaderCombination &sc);
+
 //=====================================
 // overlays
 //====================================

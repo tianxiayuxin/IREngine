@@ -53,7 +53,7 @@ bool CodeResource::raiseError(const std::string &msg)
 	release();
 	initDefault();
 
-	Modules::log(LogTypes::ERROR, "CodeResource", "'%s':%s", _name.c_str(), msg.c_str());
+	Modules::log(LogTypes::ERROR, "CodeResource '%s':%s", _name.c_str(), msg.c_str());
 	return false;
 }
 
@@ -183,6 +183,25 @@ bool CodeResource::tryLinking(uint32 *flagMask)
 	}
 	return true;
 }
+
+std::string CodeResource::assembleCode()
+{
+	if(!_loaded) return "";
+
+	std::string finalCode = _code;
+	uint32 offset = 0;
+
+	for(uint32 i = 0; i<_includes.size(); ++i)
+	{
+		std::string depCode = _includes[i].first->assembleCode();
+		finalCode.insert(_includes[i].second+offset, depCode);
+		offset += (uint32)depCode.length();
+	}
+
+	return finalCode;
+}
+
+
 
 void CodeResource::updateShaders()
 {
@@ -466,19 +485,19 @@ bool ShaderResource::parseFXSection(char *data)
 		}else if(tok.checkToken("sampler2D", true)||tok.checkToken("samplerCube", true)||
 				tok.checkToken("sampler3D", true))
 		{
-			ShaderSampler sampler;
-			sampler.sampState = SS_FILTER_TRILINEAR | SS_ANISO8 | SS_ADDR_WRAP;
+//			ShaderSampler sampler;
+//			sampler.sampState = SS_FILTER_TRILINEAR | SS_ANISO8 | SS_ADDR_WRAP;
 
-			if(tok.checkToken("sampler2D"))
-			{
-				sampler.type = TextureTypes::Tex2D;
+//			if(tok.checkToken("sampler2D"))
+//			{
+//				sampler.type = TextureTypes::Tex2D;
 //				sampler.defTex = (TextureResource *)
-			}
+//			}
 //          TODO: somthing to do with texture
 		}else if(tok.checkToken("context"))
 		{
 			ShaderContext context;
-			_tmpCod0 = tmpCode1 = "";
+			_tmpCode0 = _tmpCode1 = "";
 			context.id = tok.getToken(identifier);
 			if(context.id == "")return raiseError("FX:Invalid identifier", tok.getLine());
 
@@ -549,7 +568,7 @@ bool ShaderResource::parseFXSection(char *data)
 			for(uint32 i = 0; i <_codeSections.size(); ++i)
 			{
 				if(_codeSections[i].getName()==_tmpCode0)context.vertCodeIdx = i;
-				if(_codeSections[i].getName()==_tempCode1)context.fragCodeIdx = i;
+				if(_codeSections[i].getName()==_tmpCode1)context.fragCodeIdx = i;
 			}
 
 			if(context.vertCodeIdx <0)
@@ -631,6 +650,76 @@ bool ShaderResource::load(const char *data, int size)
 	return true;
 }
 
+
+
+void ShaderResource::preLoadCombination(uint32 combMask)
+{
+	if(!_loaded)
+	{
+		_preLoadList.insert(combMask);
+	}else
+	{
+		for(uint32 i = 0; i<_contexts.size(); ++i)
+		{
+			if(getCombination(_contexts[i], combMask))
+				_preLoadList.insert(combMask);
+		}
+	}
+}
+
+
+void ShaderResource::compileCombination(ShaderContext &context, ShaderCombination &sc)
+{
+	uint32 combMask = sc.combMask;
+
+	//Add preamble
+	_tmpCode0 = _vertPreamble;
+	_tmpCode1 = _fragPreamble;
+
+	//Insert defines for flags
+	if(combMask != 0)
+	{
+		_tmpCode0 += "\r\n//---- Flags ----\r\n";
+		_tmpCode1 += "\r\n//---Flags ---\r\n";
+		for(uint32 i = 1; i <=32; ++i)
+		{
+			if(combMask &(1<<(i-1)))
+			{
+				_tmpCode0 += "#define_F";
+				_tmpCode0 += (char)(48 + i/10);
+				_tmpCode0 += (char)(48 + i%10);
+				_tmpCode0 += "_\r\n";
+
+				_tmpCode1 += "#define _F";
+				_tmpCode1 += (char)(48 + i / 10);
+				_tmpCode1 += (char)(48 + i % 10);
+				_tmpCode1 += "_\r\n";
+			}
+		}
+		_tmpCode0 += "// ---------------\r\n";
+		_tmpCode1 += "// ---------------\r\n";
+
+		Modules::log(LogTypes::INFO, "--- COMPILING.SHADER. %S@%S[%d]---",
+				_name.c_str(), context.id.c_str(), sc.combMask);
+
+		//Unload shader if necessary
+		if(sc.shaderObj != 0)
+		{
+//			gRDI->destroyShader(sc.shaderObj);
+			sc.shaderObj = 0;
+		}
+
+		//Compile shader
+
+	}
+
+	//Add actual shader code
+	_tmpCode0 += getCode( context.vertCodeIdx )->assembleCode();
+	_tmpCode1 += getCode( context.fragCodeIdx )->assembleCode();
+
+}
+
+
 void ShaderResource::compileContexts()
 {
 	for(uint32 i = 0; i <_contexts.size(); ++i)
@@ -651,12 +740,55 @@ void ShaderResource::compileContexts()
 //			{
 //				uint32 combMask = *itr&context.flagMask;
 //			}
-
 		}
-
-
 	}
 }
+
+
+ShaderCombination *ShaderResource::getCombination(ShaderContext &context, uint32 combMask)
+{
+	if(!context.compiled) return 0x0;
+
+	//Kill combination bits that are not used by the context
+	combMask &= context.flagMask;
+
+	//Try to find combination
+	std::vector<ShaderCombination> &combs = context.shaderCombs;
+	for(size_t i = 0, s = combs.size(); i <s; ++i)
+	{
+		if(combs[i].combMask ==  combMask)return &combs[i];
+	}
+
+	//Add combination
+	combs.push_back(ShaderCombination());
+	combs.back().combMask = combMask;
+	compileCombination(context, combs.back());
+
+	return &combs.back();
+}
+
+
+
+uint32 ShaderResource::calcCombMask(const std::vector<std::string> &flags)
+{
+	uint32 combMask = 0;
+
+	for(size_t i = 0, s = flags.size(); i <s; ++i)
+	{
+		const string &flag = flags[i];
+
+		//Check format: _F<digit><digit>_
+		if(flag.length()<5)continue;
+		if(flag[0]!='_'||flag[1]!='F'||flag[4]!='_'||
+				flag[2]<48||flag[2]>57||flag[3]<48||flag[3]>57)continue;
+
+		uint32 num = (flag[2]-48)*10 + (flag[3]-48);
+		combMask |= 1<<(num-1);
+	}
+
+	return combMask;
+}
+
 
 
 

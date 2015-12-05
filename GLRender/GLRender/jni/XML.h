@@ -8,7 +8,7 @@
 #define XML_H
 
 
-#include "rapidxml.hpp"
+#include "rapidxml.h"
 #include <stdio.h>
 
 namespace IRBox{

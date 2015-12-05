@@ -26,6 +26,8 @@ public:
 		return new CodeResource(name, flags);
 	}
 
+
+
 	CodeResource(const std::string &name, int flags);
 	~CodeResource();
 
@@ -35,6 +37,7 @@ public:
 
 	bool hasDependency(CodeResource *codeRes);
 	bool tryLinking(uint32 *flagMask);
+	std::string assembleCode();
 
 private:
 	bool raiseError(const std::string &msg);
@@ -157,6 +160,9 @@ public:
 		return new ShaderResource(name, flags);
 	}
 
+
+	static uint32 calcCombMask(const std::vector<std::string> &flags);
+
 	ShaderResource(const std::string &name, int flags);
 	~ShaderResource();
 
@@ -173,6 +179,7 @@ public:
 private:
 	bool raiseError(const std::string &msg, int line = -1);
 	bool parseFXSection(char *data);
+	void compileCombination(ShaderContext &context, ShaderCombination &sc);
 
 private:
 	static std::string           _vertPreamble, _fragPreamble;

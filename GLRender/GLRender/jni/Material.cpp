@@ -9,11 +9,11 @@
 #include "XML.h"
 
 namespace IRBox{
-
 using namespace std;
-
-MaterialResource::MaterialResource(const string &name, int  flags):
-		Resource(ResourceTypes::Material, name, flags)
+//-----------------
+//------------------
+MaterialResource::MaterialResource(const string &name, int flags):
+	Resource(ResourceTypes::Material, name, flags)
 {
 	initDefault();
 }
@@ -49,9 +49,9 @@ bool MaterialResource::raiseError(const string &msg, int line)
 	initDefault();
 
 	if(line < 0)
-		Modules::log(LogTypes::ERROR, "Material", "Material resource '%s':%s", _name.c_str(), msg.c_str());
+		Modules::log(LogTypes::ERROR, "Material resource '%s':%s", _name.c_str(), msg.c_str());
 	else
-		Modules::log(LogTypes::ERROR, "Material", "Material resource '%s'in line %i: %s", _name.c_str(),line,  msg.c_str());
+		Modules::log(LogTypes::ERROR, "Material resource '%s'in line %i: %s", _name.c_str(),line,  msg.c_str());
 	return false;
 }
 
@@ -93,15 +93,24 @@ bool MaterialResource::load(const char *data, int size)
 	}
 
 	//Shader
+	nodel = rootNode.getFirstChild("Shader");
+	if(!nodel.isEmpty())
+	{
+		if(nodel.getAttribute("source")==0x0) return raiseError("Missing Shader attribute 'source'");
+
+		uint32 shader = Modules::resMan().addResource(ResourceTypes::Shader, nodel.getAttribute("source"), 0, false);
+		_shaderRes = (ShaderResource *)Modules::resMan().resolveResHandle(shader);
+
+		_combMask = ShaderResource::calcCombMask(_shaderFlags);
+		_shaderRes->preLoadCombination(_combMask);
+	}
 
 
+//   //Texture samplers
 
+//   //Vector    uniforms
+
+	return true;
 }
-
-
-
-
-
-
 
 }

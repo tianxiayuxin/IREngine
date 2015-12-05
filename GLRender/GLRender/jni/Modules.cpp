@@ -29,34 +29,32 @@ bool Modules::init()
 	if(!render().init())return false;
 
 	//Register resource types
-/*	resMan().registerResType(ResourceTypes::SceneGraph, 0x0, 0x0,
-			)*/
 
 	resMan().registerResType(ResourceTypes::Material, "Material", 0x0, 0x0, MaterialResource::factoryFunc);
 
-
+	return true;
 
 }
 
-void Modules::log(int logType, const char* moduleName, ...)
+void Modules::log(int logType, const char* format, ...)
 {
 	if(logType == LogTypes::INFO)
 	{
 		va_list args;
-		va_start(args, msg);
-		__android_log_vprint(ANDROID_LOG_INFO, "Modules", moduleName, args);
+		va_start(args, format);
+		__android_log_vprint(ANDROID_LOG_INFO, "Modules", format, args);
 		va_end(args);
 	}else if(logType == LogTypes::WARNING)
 	{
 		va_list args;
-		va_start(args, msg);
-		__android_log_vprint(ANDROID_LOG_WARN, "Modules", moduleName, args);
+		va_start(args, format);
+		__android_log_vprint(ANDROID_LOG_WARN, "Modules", format, args);
 		va_end(args);
 	}else if(logType == LogTypes::ERROR)
 	{
 		va_list args;
-		va_start(args, msg);
-		__android_log_vprint(ANDROID_LOG_ERROR, "Modules", moduleName, args);
+		va_start(args, format);
+		__android_log_vprint(ANDROID_LOG_ERROR, "Modules", format, args);
 		va_end(args);
 	}
 }

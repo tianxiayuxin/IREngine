@@ -56,13 +56,14 @@ public:
 		return new MaterialResource(name, flags);
 	}
 
-	MaterialResource(const std::string name, int flags);
+	MaterialResource(const std::string &name, int flags);
 	~MaterialResource();
 //  Resource *clone();
 
 	void intDefault();
 	void release();
-	void load(const char *data, int size);
+	//void load(const char *data, int size);
+	bool load(const char *data, int size);
 	bool setUniform(const std::string &name, float a, float b, float c, float d);
 
 	//TODO:  some methods should be specified
